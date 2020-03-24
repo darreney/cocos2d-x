@@ -130,6 +130,12 @@ public:
      */
     virtual void end();
 
+    /** Start & End grabbing functions without any group command.
+     * This will avoid crashing when clear is called.
+     */
+    void beginSane();
+    void endSane();
+
     /** Clears the texture with a color. 
      *
      * @param r Red.

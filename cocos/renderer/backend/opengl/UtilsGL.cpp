@@ -342,6 +342,11 @@ void UtilsGL::toGLTypes(PixelFormat textureFormat, GLint &internalFormat, GLuint
         isCompressed = true;
         break;
 #endif
+	case PixelFormat::RGBA16x4:
+		internalFormat = GL_RGBA16F;
+		format = GL_RGBA;
+		type = GL_UNSIGNED_BYTE;
+		break;
         //        case PixelFormat::D16:
         //            format = GL_DEPTH_COMPONENT;
         //            internalFormat = GL_DEPTH_COMPONENT;

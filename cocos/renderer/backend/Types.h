@@ -118,6 +118,9 @@ enum class PixelFormat
     //MTL_A1BGR5,
     MTL_BGR5A1,
     MTL_ABGR4,
+    
+    //! 64-bit texture for HDR
+    RGBA16x4,
 
     // A packed 32-bit combined depth and stencil pixel format with two nomorlized unsigned integer
     // components: 24 bits, typically used for a depth render target, and 8 bits, typically used for

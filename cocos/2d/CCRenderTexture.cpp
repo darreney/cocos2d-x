@@ -188,7 +188,14 @@ bool RenderTexture::initWithWidthAndHeight(int w, int h, backend::PixelFormat fo
         descriptor.width = powW;
         descriptor.height = powH;
         descriptor.textureUsage = TextureUsage::RENDER_TARGET;
-        descriptor.textureFormat = PixelFormat::RGBA8888;
+        if (PixelFormat::RGBA16x4 == format)
+        {
+            descriptor.textureFormat = format;
+        }
+        else
+        {
+            descriptor.textureFormat = PixelFormat::RGBA8888;
+        }
         auto texture = backend::Device::getInstance()->newTexture(descriptor);
         if (! texture)
             break;
@@ -663,6 +670,53 @@ void RenderTexture::clearColorAttachment()
         renderer->setRenderTarget(RenderTargetFlag::COLOR, _oldColorAttachment, nullptr, nullptr);
     };
     renderer->addCommand(&_afterClearAttachmentCommand);
+}
+
+void RenderTexture::beginSane()
+{
+	Director* director = Director::getInstance();
+	CCASSERT(nullptr != director, "Director is null when setting matrix stack");
+
+	director->pushMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_PROJECTION);
+	_projectionMatrix = director->getMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_PROJECTION);
+
+	director->pushMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW);
+	_transformMatrix = director->getMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW);
+
+	if (!_keepMatrix)
+	{
+		director->setProjection(director->getProjection());
+
+		const Size& texSize = _texture2D->getContentSizeInPixels();
+
+		// Calculate the adjustment ratios based on the old and new projections
+		Size size = director->getWinSizeInPixels();
+
+		float widthRatio = size.width / texSize.width;
+		float heightRatio = size.height / texSize.height;
+
+		Mat4 orthoMatrix;
+		Mat4::createOrthographicOffCenter((float)-1.0 / widthRatio, (float)1.0 / widthRatio, (float)-1.0 / heightRatio, (float)1.0 / heightRatio, -1, 1, &orthoMatrix);
+		director->multiplyMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_PROJECTION, orthoMatrix);
+	}
+
+	_beginCommand.init(_globalZOrder);
+	_beginCommand.func = CC_CALLBACK_0(RenderTexture::onBegin, this);
+
+	Director::getInstance()->getRenderer()->addCommand(&_beginCommand);
+}
+void RenderTexture::endSane()
+{
+	_endCommand.init(_globalZOrder);
+	_endCommand.func = CC_CALLBACK_0(RenderTexture::onEnd, this);
+
+	Director* director = Director::getInstance();
+	CCASSERT(nullptr != director, "Director is null when setting matrix stack");
+
+	director->getRenderer()->addCommand(&_endCommand);
+
+	director->popMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_PROJECTION);
+	director->popMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW);
 }
 
 NS_CC_END
