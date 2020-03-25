@@ -164,6 +164,12 @@ public:
      */
     bool supportsMapBuffer() const;
 
+	/** Whether or not FBO with float is supported 
+	 *
+	 * On GL it checks for gl major version is at least 3.0 
+	 * On Metal returns `true`.
+	 */
+	bool supportsHdrFbo() const;
     
     /** Max support directional light in shader, for Sprite3D.
      *
@@ -255,6 +261,7 @@ protected:
     bool            _supportsOESMapBuffer;
     bool            _supportsOESDepth24;
     bool            _supportsOESPackedDepthStencil;
+	bool            _supportsHdrFbo;
     
     std::string     _glExtensions;
     int             _maxDirLightInShader; //max support directional light in shader

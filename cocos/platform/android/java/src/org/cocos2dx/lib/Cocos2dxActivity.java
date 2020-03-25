@@ -306,6 +306,7 @@ public abstract class Cocos2dxActivity extends Activity implements Cocos2dxHelpe
         // use custom EGLConfigureChooser
         Cocos2dxEGLConfigChooser chooser = new Cocos2dxEGLConfigChooser(this.mGLContextAttrs);
         glSurfaceView.setEGLConfigChooser(chooser);
+        glSurfaceView.setEGLContextFactory(new ContextFactory());
 
         return glSurfaceView;
     }
@@ -398,6 +399,50 @@ public abstract class Cocos2dxActivity extends Activity implements Cocos2dxHelpe
         public EGLConfig chooseConfig(EGL10 egl, EGLDisplay display)
         {
             int[][] EGLAttributes = {
+				{
+                    // GL ES 3 with user set
+                    EGL10.EGL_RED_SIZE, mConfigAttributes[0],
+                    EGL10.EGL_GREEN_SIZE, mConfigAttributes[1],
+                    EGL10.EGL_BLUE_SIZE, mConfigAttributes[2],
+                    EGL10.EGL_ALPHA_SIZE, mConfigAttributes[3],
+                    EGL10.EGL_DEPTH_SIZE, mConfigAttributes[4],
+                    EGL10.EGL_STENCIL_SIZE,mConfigAttributes[5],
+                    EGL10.EGL_SAMPLE_BUFFERS, (mConfigAttributes[6] > 0) ? 1 : 0,
+                    EGL10.EGL_SAMPLES, mConfigAttributes[6],
+                    EGL10.EGL_RENDERABLE_TYPE, EGL_OPENGL_ES3_BIT,
+                    EGL10.EGL_NONE
+                },
+				{
+                    // GL ES 3 with user set 16 bit depth buffer
+                    EGL10.EGL_RED_SIZE, mConfigAttributes[0],
+                    EGL10.EGL_GREEN_SIZE, mConfigAttributes[1],
+                    EGL10.EGL_BLUE_SIZE, mConfigAttributes[2],
+                    EGL10.EGL_ALPHA_SIZE, mConfigAttributes[3],
+                    EGL10.EGL_DEPTH_SIZE, mConfigAttributes[4] >= 24 ? 16 : mConfigAttributes[4],
+                    EGL10.EGL_STENCIL_SIZE,mConfigAttributes[5],
+                    EGL10.EGL_SAMPLE_BUFFERS, (mConfigAttributes[6] > 0) ? 1 : 0,
+                    EGL10.EGL_SAMPLES, mConfigAttributes[6],
+                    EGL10.EGL_RENDERABLE_TYPE, EGL_OPENGL_ES3_BIT,
+                    EGL10.EGL_NONE
+                },
+				{
+                    // GL ES 3 with user set 16 bit depth buffer without multisampling
+                    EGL10.EGL_RED_SIZE, mConfigAttributes[0],
+                    EGL10.EGL_GREEN_SIZE, mConfigAttributes[1],
+                    EGL10.EGL_BLUE_SIZE, mConfigAttributes[2],
+                    EGL10.EGL_ALPHA_SIZE, mConfigAttributes[3],
+                    EGL10.EGL_DEPTH_SIZE, mConfigAttributes[4] >= 24 ? 16 : mConfigAttributes[4],
+                    EGL10.EGL_STENCIL_SIZE,mConfigAttributes[5],
+                    EGL10.EGL_SAMPLE_BUFFERS, 0,
+                    EGL10.EGL_SAMPLES, 0,
+                    EGL10.EGL_RENDERABLE_TYPE, EGL_OPENGL_ES3_BIT,
+                    EGL10.EGL_NONE
+                },
+                {
+                    // GL ES 3 by default
+                    EGL10.EGL_RENDERABLE_TYPE, EGL_OPENGL_ES3_BIT,
+                    EGL10.EGL_NONE
+                },
                 {
                     // GL ES 2 with user set
                     EGL10.EGL_RED_SIZE, mConfigAttributes[0],
@@ -463,6 +508,35 @@ public abstract class Cocos2dxActivity extends Activity implements Cocos2dxHelpe
                 return configs[0];
             }
             return null;
+        }
+    }
+
+    private static class ContextFactory implements GLSurfaceView.EGLContextFactory {
+
+        private static int EGL_CONTEXT_CLIENT_VERSION = 0x3098;
+
+        public EGLContext createContext(
+                EGL10 egl, EGLDisplay display, EGLConfig eglConfig) {
+
+            // create GL ES 3 context first,
+            // if failed, then try to create GL ES 2 context
+
+            int[] attributes = {EGL_CONTEXT_CLIENT_VERSION, 3, EGL10.EGL_NONE };
+            // attempt to create a OpenGL ES 3.0 context
+            EGLContext context = egl.eglCreateContext(
+                    display, eglConfig, EGL10.EGL_NO_CONTEXT, attributes);
+
+            if (context.equals(EGL10.EGL_NO_CONTEXT)) {
+                attributes = new int[] {EGL_CONTEXT_CLIENT_VERSION, 2, EGL10.EGL_NONE };
+                context = egl.eglCreateContext(
+                        display, eglConfig, EGL10.EGL_NO_CONTEXT, attributes);
+            }
+
+            return context;
+        }
+
+        public void destroyContext(EGL10 egl, EGLDisplay display, EGLContext context) {
+            egl.eglDestroyContext(display, context);
         }
     }
 }

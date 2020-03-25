@@ -442,6 +442,9 @@ bool DeviceInfoMTL::checkForFeatureSupported(FeatureType feature)
     case FeatureType::ASTC:
         featureSupported = supportASTC(_featureSet);
         break;
+	case FeatureType::HDR:
+		featureSupported = true;
+		break;
     default:
         break;
     }

@@ -345,22 +345,16 @@ void UtilsGL::toGLTypes(PixelFormat textureFormat, GLint &internalFormat, GLuint
 	case PixelFormat::RGBA16x4:
 		internalFormat = GL_RGBA16F;
 		format = GL_RGBA;
-		type = GL_UNSIGNED_BYTE;
+		type = GL_HALF_FLOAT;
 		break;
         //        case PixelFormat::D16:
         //            format = GL_DEPTH_COMPONENT;
         //            internalFormat = GL_DEPTH_COMPONENT;
         //            type = GL_UNSIGNED_INT;
     case PixelFormat::D24S8:
-#ifdef CC_USE_GLES
-        format = GL_DEPTH_STENCIL_OES;
-        internalFormat = GL_DEPTH_STENCIL_OES;
-        type = GL_UNSIGNED_INT_24_8_OES;
-#else
         format = GL_DEPTH_STENCIL;
         internalFormat = GL_DEPTH24_STENCIL8;
         type = GL_UNSIGNED_INT_24_8;
-#endif
         break;
     default:
         break;

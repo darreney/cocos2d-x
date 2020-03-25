@@ -98,6 +98,17 @@ bool DeviceInfoGL::checkForFeatureSupported(FeatureType feature)
     case FeatureType::DEPTH24:
         featureSupported = checkForGLExtension("GL_OES_depth24");
         break;
+	case FeatureType::HDR:
+	{
+		int version = 0;
+		glGetIntegerv(GL_MAJOR_VERSION, &version);
+#ifdef CC_USE_GLES
+		featureSupported = version >= 3;
+#else
+		featureSupported = version >= 2;
+#endif
+		break;
+	}
     default:
         break;
     }

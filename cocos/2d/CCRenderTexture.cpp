@@ -190,7 +190,8 @@ bool RenderTexture::initWithWidthAndHeight(int w, int h, backend::PixelFormat fo
         descriptor.textureUsage = TextureUsage::RENDER_TARGET;
         if (PixelFormat::RGBA16x4 == format)
         {
-            descriptor.textureFormat = format;
+			CCASSERT(cocos2d::Configuration::getInstance()->supportsHdrFbo(), "Pixel format not supported on device");
+			descriptor.textureFormat = format;
         }
         else
         {

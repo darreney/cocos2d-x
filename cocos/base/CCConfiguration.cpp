@@ -53,6 +53,7 @@ Configuration::Configuration()
 , _supportsOESMapBuffer(false)
 , _supportsOESDepth24(false)
 , _supportsOESPackedDepthStencil(false)
+, _supportsHdrFbo(false)
 , _maxDirLightInShader(1)
 , _maxPointLightInShader(1)
 , _maxSpotLightInShader(1)
@@ -152,6 +153,9 @@ void Configuration::gatherGPUInfo()
     
     _supportsOESDepth24 = _deviceInfo->checkForFeatureSupported(backend::FeatureType::DEPTH24);
     _valueDict["supports_OES_depth24"] = Value(_supportsOESDepth24);
+
+	_supportsHdrFbo = _deviceInfo->checkForFeatureSupported(backend::FeatureType::HDR);
+	_valueDict["supports_HDR_FBO"] = Value(_supportsHdrFbo);
     
     _glExtensions = _deviceInfo->getExtension();
 }
@@ -258,6 +262,11 @@ bool Configuration::supportsMapBuffer() const
 #else
     return true;
 #endif
+}
+
+bool Configuration::supportsHdrFbo() const
+{
+	return _supportsHdrFbo;
 }
 
 bool Configuration::supportsOESDepth24() const
